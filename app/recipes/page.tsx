@@ -6,6 +6,8 @@ export default async function RecipesPage() {
     .select("*")
     .order("created_at", { ascending: false })
 
+  console.log(recipes, error)
+
   if (error) {
     return <div>Errore: {error.message}</div>
   }
