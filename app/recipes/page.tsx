@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import { supabase } from "../lib/supabase"
 
 type Recipe = {
@@ -66,7 +67,9 @@ export default function RecipesPage() {
       <ul>
         {recipes.map((recipe) => (
           <li key={recipe.id}>
-            {recipe.name} — {recipe.base_servings} persone
+            <Link href={`/recipes/${recipe.id}`}>
+              {recipe.name} — {recipe.base_servings} persone
+            </Link>
           </li>
         ))}
       </ul>
