@@ -79,7 +79,6 @@ export default function WeekDetailPage() {
     }
 
     await supabase.from("meals").insert(newMeals)
-    fetchMeals()
   }
 
   async function updateMeal(mealId: string, field: string, value: any) {
@@ -98,10 +97,23 @@ export default function WeekDetailPage() {
   }, [])
 
   useEffect(() => {
-    if (weekStart && meals.length === 0) {
-      createInitialMeals(weekStart)
-    }
-  }, [weekStart])
+  if (!weekStart) return
+
+  async function ensureMealsExist() {
+    const { count } = await supabase
+      .from("meals")
+      .select("*", { count: "exact", head: true })
+      .eq("weekly_menu_id", weekId)
+
+    	if (count === 0) {
+      	await createInitialMeals(weekStart)
+    	} else {
+      	fetchMeals()
+    	}
+  	}
+
+  	ensureMealsExist()
+	}, [weekStart])
 
   const grouped = meals.reduce((acc: any, meal) => {
     if (!acc[meal.date]) acc[meal.date] = []
