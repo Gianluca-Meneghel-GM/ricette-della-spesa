@@ -11,17 +11,17 @@ type ShoppingItem = {
   checked: boolean
 }
 
-type RecipeIngredientRow = {
-  recipe_id: string
-  quantity: number
-  unit: string | null
-  ingredient: { name: string } | null // <--- tipo corretto
-}
-
 type MealRow = {
   id: string
   recipe_id: string
   people_count: number
+}
+
+type RecipeIngredientRow = {
+  recipe_id: string
+  quantity: number
+  unit: string | null
+  ingredient: { name: string } | null
 }
 
 export default function ShoppingPage() {
@@ -32,24 +32,28 @@ export default function ShoppingPage() {
 
   async function generateShoppingList() {
     // 1️⃣ Prendiamo tutti i meals con recipe_id
-    const { data: meals } = await supabase
-      .from<MealRow, any >("meals")
+    const { data: meals, error: mealsError } = await supabase
+      .from("meals")
       .select("id, people_count, recipe_id")
       .eq("weekly_menu_id", weekId)
       .not("recipe_id", "is", null)
 
-    if (!meals || meals.length === 0) {
-      setItems([
-        { name: "DEBUG: Nessun meal con ricetta", total_quantity: 0, unit: "", checked: false }
-      ])
+    if (mealsError) {
+      console.error("Errore meals:", mealsError)
       return
     }
 
-    const recipeIds = meals.map(m => m.recipe_id).filter((id): id is string => !!id)
+    if (!meals || meals.length === 0) {
+      setItems([{ name: "DEBUG: Nessun meal con ricetta", total_quantity: 0, unit: "", checked: false }])
+      return
+    }
+
+    const mealsTyped: MealRow[] = meals as MealRow[]
+    const recipeIds = mealsTyped.map(m => m.recipe_id).filter(Boolean)
 
     // 2️⃣ Prendiamo ingredienti delle ricette
-    const { data: recipeIngredients } = await supabase
-      .from<RecipeIngredientRow, any>("recipe_ingredients")
+    const { data: recipeIngredients, error: riError } = await supabase
+      .from("recipe_ingredients")
       .select(`
         recipe_id,
         quantity,
@@ -58,17 +62,21 @@ export default function ShoppingPage() {
       `)
       .in("recipe_id", recipeIds)
 
-    if (!recipeIngredients || recipeIngredients.length === 0) {
-      setItems([
-        { name: "DEBUG: Nessun recipe_ingredient trovato", total_quantity: 0, unit: "", checked: false }
-      ])
+    if (riError) {
+      console.error("Errore recipeIngredients:", riError)
       return
     }
 
+    if (!recipeIngredients || recipeIngredients.length === 0) {
+      setItems([{ name: "DEBUG: Nessun recipe_ingredient trovato", total_quantity: 0, unit: "", checked: false }])
+      return
+    }
+
+    const riTyped: RecipeIngredientRow[] = recipeIngredients as RecipeIngredientRow[]
     const aggregated: Record<string, ShoppingItem> = {}
 
-    for (const meal of meals) {
-      const ingredientsForRecipe = recipeIngredients.filter(ri => ri.recipe_id === meal.recipe_id)
+    for (const meal of mealsTyped) {
+      const ingredientsForRecipe = riTyped.filter(ri => ri.recipe_id === meal.recipe_id)
 
       for (const ri of ingredientsForRecipe) {
         const ingredientName = ri.ingredient?.name
