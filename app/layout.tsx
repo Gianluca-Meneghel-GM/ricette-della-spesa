@@ -47,6 +47,7 @@ export default function RootLayout({
         >
           <NavLink href="/recipes" label="Ricette" />
           <NavLink href="/ingredients" label="Ingredienti" />
+          <NavLink href="/weeks" label="Settimane" />
         </div>
 
         <div>{children}</div>
