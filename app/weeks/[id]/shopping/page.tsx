@@ -37,8 +37,9 @@ if (!meals || meals.length === 0) {
   return
 }
 
-    const recipeIds = meals.map(m => m.recipe_id)
-
+    const recipeIds = meals
+  .map(m => m.recipe_id)
+  .filter((id): id is string => typeof id === "string")
 
 
 
