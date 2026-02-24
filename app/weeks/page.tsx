@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from "react"
-import Link from "next/link"
 import { supabase } from "../lib/supabase"
+import Link from "next/link"
 
 type Week = {
   id: string
@@ -33,6 +33,18 @@ export default function WeeksPage() {
     fetchWeeks()
   }
 
+  async function deleteWeek(id: string) {
+    const confirmDelete = confirm("Sei sicuro di voler eliminare questa settimana?")
+    if (!confirmDelete) return
+
+    await supabase
+      .from("weekly_menus")
+      .delete()
+      .eq("id", id)
+
+    fetchWeeks()
+  }
+
   useEffect(() => {
     fetchWeeks()
   }, [])
@@ -41,25 +53,70 @@ export default function WeeksPage() {
     <div style={{ padding: 24 }}>
       <h1>Settimane</h1>
 
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: 32 }}>
         <input
           type="date"
           value={weekStart}
           onChange={(e) => setWeekStart(e.target.value)}
-          style={{ padding: 10, marginRight: 8 }}
+          style={{
+            padding: 12,
+            marginRight: 8,
+            borderRadius: 8,
+            border: "1px solid #ccc"
+          }}
         />
-        <button onClick={createWeek}>Crea settimana</button>
+        <button
+          onClick={createWeek}
+          style={{
+            padding: "12px 16px",
+            borderRadius: 8,
+            border: "none",
+            cursor: "pointer"
+          }}
+        >
+          Crea settimana
+        </button>
       </div>
 
-      <ul>
- 			 {weeks.map((week) => (
-    			<li key={week.id}>
-      			<Link href={`/weeks/${week.id}`}>
-       			 {week.week_start}
-    			  </Link>
-    			</li>
-  			))}
-			</ul>
+      <div style={{ display: "grid", gap: 16 }}>
+        {weeks.map((week) => (
+          <div
+            key={week.id}
+            style={{
+              border: "1px solid #ddd",
+              borderRadius: 16,
+              padding: 20,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center"
+            }}
+          >
+            <Link
+              href={`/weeks/${week.id}`}
+              style={{
+                textDecoration: "none",
+                fontWeight: 600,
+                fontSize: 18
+              }}
+            >
+              Settimana del {week.week_start}
+            </Link>
+
+            <button
+              onClick={() => deleteWeek(week.id)}
+              style={{
+                background: "#eee",
+                border: "none",
+                padding: "8px 12px",
+                borderRadius: 8,
+                cursor: "pointer"
+              }}
+            >
+              Elimina
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
