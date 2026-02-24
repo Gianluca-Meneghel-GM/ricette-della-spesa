@@ -51,10 +51,12 @@ export default function ShoppingPage() {
 			)
 
       for (const ri of ingredientsForRecipe) {
-        const key = ri.ingredients.name
-
+        const ingredientName = ri.ingredients[0]?.name
+        if (!ingredientName) continue
+      
+        const key = ingredientName
         const quantity = ri.quantity * meal.people_count
-
+      
         if (!aggregated[key]) {
           aggregated[key] = {
             name: key,
@@ -63,7 +65,7 @@ export default function ShoppingPage() {
             checked: false
           }
         }
-
+      
         aggregated[key].total_quantity += quantity
       }
     }
