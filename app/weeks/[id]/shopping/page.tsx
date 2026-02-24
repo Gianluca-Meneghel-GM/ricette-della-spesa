@@ -25,9 +25,14 @@ export default function ShoppingPage() {
       .eq("weekly_menu_id", weekId)
       .not("recipe_id", "is", null)
 
+console.log("Meals:", meals)
+
     if (!meals || meals.length === 0) return
 
     const recipeIds = meals.map(m => m.recipe_id)
+
+console.log("Recipe IDs:", recipeIds)
+
 
     // 2️⃣ Prendiamo ingredienti delle ricette
     const { data: recipeIngredients } = await supabase
@@ -39,6 +44,8 @@ export default function ShoppingPage() {
         ingredients(name)
       `)
       .in("recipe_id", recipeIds)
+
+console.log("Recipe ingredients:", recipeIngredients)
 
     if (!recipeIngredients) return
 
