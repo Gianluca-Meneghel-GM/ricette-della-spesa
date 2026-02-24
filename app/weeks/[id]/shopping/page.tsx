@@ -45,9 +45,10 @@ export default function ShoppingPage() {
     const aggregated: Record<string, ShoppingItem> = {}
 
     for (const meal of meals) {
-      const ingredientsForRecipe = recipeIngredients.filter(
-        ri => ri.recipes.id === meal.recipe_id
-      )
+
+			const ingredientsForRecipe = recipeIngredients.filter(
+  			ri => ri.recipes[0]?.id === meal.recipe_id
+			)
 
       for (const ri of ingredientsForRecipe) {
         const key = ri.ingredients.name
