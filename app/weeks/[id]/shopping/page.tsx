@@ -25,13 +25,21 @@ export default function ShoppingPage() {
       .eq("weekly_menu_id", weekId)
       .not("recipe_id", "is", null)
 
-console.log("Meals:", meals)
-
-    if (!meals || meals.length === 0) return
+if (!meals || meals.length === 0) {
+  setItems([
+    {
+      name: "DEBUG: Nessun meal con ricetta",
+      total_quantity: 0,
+      unit: "",
+      checked: false
+    }
+  ])
+  return
+}
 
     const recipeIds = meals.map(m => m.recipe_id)
 
-console.log("Recipe IDs:", recipeIds)
+
 
 
     // 2️⃣ Prendiamo ingredienti delle ricette
@@ -45,9 +53,17 @@ console.log("Recipe IDs:", recipeIds)
       `)
       .in("recipe_id", recipeIds)
 
-console.log("Recipe ingredients:", recipeIngredients)
-
-    if (!recipeIngredients) return
+if (!recipeIngredients || recipeIngredients.length === 0) {
+  setItems([
+    {
+      name: "DEBUG: Nessun recipe_ingredient trovato",
+      total_quantity: 0,
+      unit: "",
+      checked: false
+    }
+  ])
+  return
+}
 
     const aggregated: Record<string, ShoppingItem> = {}
 
