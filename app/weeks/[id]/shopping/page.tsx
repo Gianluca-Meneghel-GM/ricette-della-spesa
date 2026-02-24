@@ -33,7 +33,7 @@ export default function ShoppingPage() {
   async function generateShoppingList() {
     // 1️⃣ Prendiamo tutti i meals con recipe_id
     const { data: meals } = await supabase
-      .from<MealRow, MealRow >("meals")
+      .from<MealRow, any >("meals")
       .select("id, people_count, recipe_id")
       .eq("weekly_menu_id", weekId)
       .not("recipe_id", "is", null)
@@ -49,7 +49,7 @@ export default function ShoppingPage() {
 
     // 2️⃣ Prendiamo ingredienti delle ricette
     const { data: recipeIngredients } = await supabase
-      .from<RecipeIngredientRow, RecipeIngredientRow>("recipe_ingredients")
+      .from<RecipeIngredientRow, any>("recipe_ingredients")
       .select(`
         recipe_id,
         quantity,
