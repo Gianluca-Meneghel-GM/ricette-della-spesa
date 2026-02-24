@@ -109,12 +109,6 @@ export default function WeekDetailPage() {
     return acc
   }, {})
 
-	const weekday = new Date(date)
-  	.toLocaleDateString("it-IT", { weekday: "long" })
-
-	const capitalized =
-  	weekday.charAt(0).toUpperCase() + weekday.slice(1)
-
   return (
     <div style={{ padding: 24 }}>
       <h1>Settimana {weekStart}</h1>
@@ -131,7 +125,11 @@ export default function WeekDetailPage() {
               marginBottom: 16
             }}
           >
-            <h3>{capitalized} - {date}</h3>
+           <h3>
+  				{new Date(date).toLocaleDateString("it-IT", {
+    				weekday: "long",
+  				})} – {date}
+					</h3>
 
           {grouped[date]
   				.sort((a: Meal, b: Meal) => {
