@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import { supabase } from "../../lib/supabase"
 import { useParams } from "next/navigation"
 
@@ -124,6 +125,16 @@ export default function WeekDetailPage() {
   return (
     <div style={{ padding: 24 }}>
       <h1>Settimana {weekStart}</h1>
+			
+			<Link
+        href={`/weeks/${weekId}/shopping`}
+        style={{
+          display: "inline-block",
+          marginBottom: 20
+        }}
+      >
+        Vai alla lista della spesa
+      </Link>
 
       {Object.keys(grouped)
         .sort()
