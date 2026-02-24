@@ -17,68 +17,70 @@ export default function ShoppingPage() {
 
   const [items, setItems] = useState<ShoppingItem[]>([])
 
+  // Genera la lista della spesa aggregata
   async function generateShoppingList() {
-    // 1️⃣ Prendiamo tutti i meals con ricetta
+    // 1️⃣ Prendiamo tutti i meals con recipe_id
     const { data: meals } = await supabase
       .from("meals")
       .select("id, people_count, recipe_id")
       .eq("weekly_menu_id", weekId)
       .not("recipe_id", "is", null)
 
-if (!meals || meals.length === 0) {
-  setItems([
-    {
-      name: "DEBUG: Nessun meal con ricetta",
-      total_quantity: 0,
-      unit: "",
-      checked: false
+    if (!meals || meals.length === 0) {
+      setItems([
+        {
+          name: "DEBUG: Nessun meal con ricetta",
+          total_quantity: 0,
+          unit: "",
+          checked: false
+        }
+      ])
+      return
     }
-  ])
-  return
-}
 
+    // Filtro solo gli id validi
     const recipeIds = meals
-  .map(m => m.recipe_id)
-  .filter((id): id is string => typeof id === "string")
+      .map(m => m.recipe_id)
+      .filter((id): id is string => typeof id === "string")
 
+    // 2️⃣ Prendiamo ingredienti delle ricette con join corretto
+    const { data: recipeIngredients } = await supabase
+      .from("recipe_ingredients")
+      .select(`
+        recipe_id,
+        quantity,
+        unit,
+        ingredient:ingredients(name)
+      `)
+      .in("recipe_id", recipeIds)
 
-const { data: recipeIngredients } = await supabase
-  .from("recipe_ingredients")
-  .select(`
-    recipe_id,
-    quantity,
-    unit,
-    ingredients(name)
-  `)
-
-if (!recipeIngredients || recipeIngredients.length === 0) {
-  setItems([
-    {
-      name: "DEBUG: Nessun recipe_ingredient trovato",
-      total_quantity: 0,
-      unit: "",
-      checked: false
+    if (!recipeIngredients || recipeIngredients.length === 0) {
+      setItems([
+        {
+          name: "DEBUG: Nessun recipe_ingredient trovato",
+          total_quantity: 0,
+          unit: "",
+          checked: false
+        }
+      ])
+      return
     }
-  ])
-  return
-}
 
+    // 3️⃣ Aggregazione per nome ingrediente
     const aggregated: Record<string, ShoppingItem> = {}
 
     for (const meal of meals) {
-
-
-const ingredientsForRecipe = recipeIngredients.filter(
-  ri => ri.recipe_id === meal.recipe_id
-)
+      const ingredientsForRecipe = recipeIngredients.filter(
+        ri => ri.recipe_id === meal.recipe_id
+      )
 
       for (const ri of ingredientsForRecipe) {
-        const ingredientName = ri.ingredients[0]?.name
+        const ingredientName = ri.ingredient?.name
         if (!ingredientName) continue
-      
+
         const key = ingredientName
         const quantity = ri.quantity * meal.people_count
-      
+
         if (!aggregated[key]) {
           aggregated[key] = {
             name: key,
@@ -87,7 +89,7 @@ const ingredientsForRecipe = recipeIngredients.filter(
             checked: false
           }
         }
-      
+
         aggregated[key].total_quantity += quantity
       }
     }
@@ -95,6 +97,7 @@ const ingredientsForRecipe = recipeIngredients.filter(
     setItems(Object.values(aggregated))
   }
 
+  // Toggle checkbox
   function toggleItem(index: number) {
     const updated = [...items]
     updated[index].checked = !updated[index].checked
