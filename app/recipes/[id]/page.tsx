@@ -80,7 +80,7 @@ export default function RecipeDetailPage() {
     <div style={{ padding: 24 }}>
       <h1>Ingredienti della ricetta</h1>
 
-      <div style={{ marginBottom: 24 }}>
+
         <button
           onClick={() => setShowModal(true)}
           style={{
@@ -93,6 +93,8 @@ export default function RecipeDetailPage() {
         >
           + Nuovo ingrediente
         </button>
+
+      <div style={{ marginBottom: 24 }}>
         <select
           value={selectedIngredient}
           onChange={(e) => setSelectedIngredient(e.target.value)}
