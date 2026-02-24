@@ -25,6 +25,10 @@ export default function RecipeDetailPage() {
   const [selectedIngredient, setSelectedIngredient] = useState("")
   const [quantity, setQuantity] = useState(0)
 
+  const [showModal, setShowModal] = useState(false)
+  const [newIngredientName, setNewIngredientName] = useState("")
+  const [newIngredientUnit, setNewIngredientUnit] = useState("g")
+
   async function fetchIngredients() {
     const { data } = await supabase.from("ingredients").select("*").order("name")
     if (data) setIngredients(data)
@@ -37,6 +41,19 @@ export default function RecipeDetailPage() {
       .eq("recipe_id", recipeId)
 
     if (data) setRecipeIngredients(data as any)
+  }
+
+  async function createIngredient() {
+    if (!newIngredientName) return
+
+    await supabase.from("ingredients").insert([
+      { name: newIngredientName, unit: newIngredientUnit }
+    ])
+
+    setNewIngredientName("")
+    setNewIngredientUnit("g")
+    setShowModal(false)
+    fetchIngredients()
   }
 
   async function addIngredientToRecipe() {
@@ -64,6 +81,18 @@ export default function RecipeDetailPage() {
       <h1>Ingredienti della ricetta</h1>
 
       <div style={{ marginBottom: 24 }}>
+        <button
+          onClick={() => setShowModal(true)}
+          style={{
+            padding: "8px 12px",
+            marginBottom: 12,
+            borderRadius: 8,
+            border: "1px solid #ccc",
+            background: "#f5f5f5"
+          }}
+        >
+          + Nuovo ingrediente
+        </button>
         <select
           value={selectedIngredient}
           onChange={(e) => setSelectedIngredient(e.target.value)}
@@ -96,6 +125,60 @@ export default function RecipeDetailPage() {
           </li>
         ))}
       </ul>
+      {showModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}
+        >
+          <div
+            style={{
+              background: "white",
+              padding: 24,
+              borderRadius: 12,
+              width: 300
+            }}
+          >
+            <h3>Nuovo ingrediente</h3>
+      
+            <input
+              placeholder="Nome"
+              value={newIngredientName}
+              onChange={(e) => setNewIngredientName(e.target.value)}
+              style={{
+                width: "100%",
+                padding: 10,
+                marginBottom: 12,
+                borderRadius: 8,
+                border: "1px solid #ccc"
+              }}
+            />
+      
+            <input
+              placeholder="Unità (g, ml, pz)"
+              value={newIngredientUnit}
+              onChange={(e) => setNewIngredientUnit(e.target.value)}
+              style={{
+                width: "100%",
+                padding: 10,
+                marginBottom: 16,
+                borderRadius: 8,
+                border: "1px solid #ccc"
+              }}
+            />
+      
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <button onClick={() => setShowModal(false)}>Annulla</button>
+              <button onClick={createIngredient}>Salva</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
