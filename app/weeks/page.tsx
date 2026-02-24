@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import { supabase } from "../lib/supabase"
 
 type Week = {
@@ -51,12 +52,14 @@ export default function WeeksPage() {
       </div>
 
       <ul>
-        {weeks.map((week) => (
-          <li key={week.id}>
-            {week.week_start}
-          </li>
-        ))}
-      </ul>
+ 			 {weeks.map((week) => (
+    			<li key={week.id}>
+      			<Link href={`/weeks/${week.id}`}>
+       			 {week.week_start}
+    			  </Link>
+    			</li>
+  			))}
+			</ul>
     </div>
   )
 }
