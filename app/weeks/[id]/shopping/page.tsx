@@ -42,17 +42,14 @@ if (!meals || meals.length === 0) {
   .filter((id): id is string => typeof id === "string")
 
 
-
-    // 2️⃣ Prendiamo ingredienti delle ricette
-    const { data: recipeIngredients } = await supabase
-      .from("recipe_ingredients")
-      .select(`
-        quantity,
-        unit,
-        recipes!inner(id),
-        ingredients(name)
-      `)
-      .in("recipe_id", recipeIds)
+const { data: recipeIngredients } = await supabase
+  .from("recipe_ingredients")
+  .select(`
+    recipe_id,
+    quantity,
+    unit,
+    ingredients(name)
+  `)
 
 if (!recipeIngredients || recipeIngredients.length === 0) {
   setItems([
@@ -70,9 +67,10 @@ if (!recipeIngredients || recipeIngredients.length === 0) {
 
     for (const meal of meals) {
 
-			const ingredientsForRecipe = recipeIngredients.filter(
-  			ri => ri.recipes[0]?.id === meal.recipe_id
-			)
+
+const ingredientsForRecipe = recipeIngredients.filter(
+  ri => ri.recipe_id === meal.recipe_id
+)
 
       for (const ri of ingredientsForRecipe) {
         const ingredientName = ri.ingredients[0]?.name
