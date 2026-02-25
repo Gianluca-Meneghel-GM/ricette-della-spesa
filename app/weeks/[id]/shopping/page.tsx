@@ -53,12 +53,7 @@ setItems([
   // 2️⃣ Ingredienti collegati alle ricette della week
   const { data: recipeIngredients } = await supabase
     .from("recipe_ingredients")
-    .select(`
-      recipe_id,
-      quantity,
-      unit,
-      ingredients(name)
-    `)
+    .select("*")
 
   if (!recipeIngredients || recipeIngredients.length === 0) {
     setItems([])
