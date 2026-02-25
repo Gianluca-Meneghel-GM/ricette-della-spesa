@@ -44,9 +44,7 @@ async function generateShoppingList() {
     return
   }
 
-setItems([
-        { name: meals[0].recipe_id, total_quantity: 0, unit: "", checked: false }
-      ])
+
 
   const recipeIds = meals.map(m => m.recipe_id)
 
@@ -56,12 +54,14 @@ setItems([
     .select("*")
 
   if (!recipeIngredients || recipeIngredients.length === 0) {
-    setItems([
-        { name: "caz", total_quantity: 0, unit: "", checked: false }
-      ])
+    setItems([])
 
     return
   }
+
+setItems([
+        { name: recipeIngredients[0].recipe_id, total_quantity: 0, unit: "", checked: false }
+      ])
 
   const aggregated: Record<string, ShoppingItem> = {}
 
