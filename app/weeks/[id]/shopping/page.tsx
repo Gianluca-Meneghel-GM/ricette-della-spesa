@@ -69,9 +69,11 @@ async function generateShoppingList() {
     )
 
 
-
-
     for (const ri of ingredientsForRecipe) {
+
+setItems([
+        { name: JSON.stringify(ri), total_quantity: 0, unit: "", checked: false }
+      ])
 
       const ingredientName = ri.ingredients?.[0]?.name
       if (!ingredientName) continue
@@ -90,9 +92,7 @@ async function generateShoppingList() {
       aggregated[ingredientName].total_quantity += quantity
     }
   }
-setItems([
-        { name: JSON.stringify(aggregated), total_quantity: 0, unit: "", checked: false }
-      ])
+
   //setItems(Object.values(aggregated))
 }
 
