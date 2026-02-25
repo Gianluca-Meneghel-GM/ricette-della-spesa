@@ -59,7 +59,6 @@ setItems([
       unit,
       ingredients(name)
     `)
-    .in("recipe_id", recipeIds)
 
   if (!recipeIngredients || recipeIngredients.length === 0) {
     setItems([])
