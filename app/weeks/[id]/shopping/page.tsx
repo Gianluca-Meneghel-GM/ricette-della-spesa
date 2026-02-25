@@ -91,7 +91,7 @@ async function generateShoppingList() {
     }
   }
 setItems([
-        { name: aggregated[0].value, total_quantity: 0, unit: "", checked: false }
+        { name: aggregated, total_quantity: 0, unit: "", checked: false }
       ])
   //setItems(Object.values(aggregated))
 }
