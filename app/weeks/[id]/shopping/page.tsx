@@ -44,21 +44,35 @@ async function generateShoppingList() {
     return
   }
 
-
-
   const recipeIds = meals.map(m => m.recipe_id)
 
-  // 2️⃣ Ingredienti collegati alle ricette della week
+  // 2️⃣ Recipe ingredients filtrati
   const { data: recipeIngredients } = await supabase
     .from("recipe_ingredients")
-    .select("*")
+    .select("recipe_id, ingredient_id, quantity, unit")
+    .in("recipe_id", recipeIds)
 
   if (!recipeIngredients || recipeIngredients.length === 0) {
     setItems([])
-
     return
   }
 
+  // 3️⃣ Prendiamo tutti gli ingredienti
+  const { data: ingredients } = await supabase
+    .from("ingredients")
+    .select("id, name")
+
+  if (!ingredients) {
+    setItems([])
+    return
+  }
+
+  // Creiamo mappa ingredient_id -> name
+  const ingredientMap: Record<string, string> = {}
+
+  for (const ing of ingredients) {
+    ingredientMap[ing.id] = ing.name
+  }
 
   const aggregated: Record<string, ShoppingItem> = {}
 
@@ -68,14 +82,9 @@ async function generateShoppingList() {
       ri => ri.recipe_id === meal.recipe_id
     )
 
-
     for (const ri of ingredientsForRecipe) {
 
-setItems([
-        { name: JSON.stringify(ri), total_quantity: 0, unit: "", checked: false }
-      ])
-
-      const ingredientName = ri.ingredients?.[0]?.name
+      const ingredientName = ingredientMap[ri.ingredient_id]
       if (!ingredientName) continue
 
       const quantity = ri.quantity * meal.people_count
@@ -93,7 +102,7 @@ setItems([
     }
   }
 
-  //setItems(Object.values(aggregated))
+  setItems(Object.values(aggregated))
 }
 
   function toggleItem(index: number) {
