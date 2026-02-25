@@ -21,7 +21,7 @@ type RecipeIngredientRow = {
   recipe_id: string
   quantity: number
   unit: string | null
-  ingredient: { name: string } | null
+  ingredient: { name: string }[]
 }
 
 export default function ShoppingPage() {
@@ -72,14 +72,14 @@ export default function ShoppingPage() {
       return
     }
 
-    const riTyped: RecipeIngredientRow[] = recipeIngredients as RecipeIngredientRow[]
+    const riTyped = recipeIngredients as RecipeIngredientRow[]
     const aggregated: Record<string, ShoppingItem> = {}
 
     for (const meal of mealsTyped) {
       const ingredientsForRecipe = riTyped.filter(ri => ri.recipe_id === meal.recipe_id)
 
       for (const ri of ingredientsForRecipe) {
-        const ingredientName = ri.ingredient?.name
+        const ingredientName = ri.ingredient[0]?.name
         if (!ingredientName) continue
 
         const key = ingredientName
