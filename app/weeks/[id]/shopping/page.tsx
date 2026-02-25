@@ -56,7 +56,10 @@ setItems([
     .select("*")
 
   if (!recipeIngredients || recipeIngredients.length === 0) {
-    setItems([])
+    setItems([
+        { name: "caz", total_quantity: 0, unit: "", checked: false }
+      ])
+
     return
   }
 
