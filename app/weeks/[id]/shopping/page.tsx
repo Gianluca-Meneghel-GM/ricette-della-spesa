@@ -52,7 +52,7 @@ export default function ShoppingPage() {
     const recipeIds = mealsTyped.map(m => m.recipe_id).filter(Boolean)
 
     // 2️⃣ Prendiamo ingredienti delle ricette
-    const { data: recipeIngredients, error: riError } = await supabase
+    const { data: recipeIngredients } = await supabase
       .from("recipe_ingredients")
       .select(`
         recipe_id,
@@ -60,7 +60,8 @@ export default function ShoppingPage() {
         unit,
         ingredient:ingredients(name)
       `)
-      .in("recipe_id", recipeIds)
+    
+    console.log("ALL RECIPE INGREDIENTS:", recipeIngredients)
 
     if (riError) {
       console.error("Errore recipeIngredients:", riError)
