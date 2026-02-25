@@ -59,9 +59,6 @@ async function generateShoppingList() {
     return
   }
 
-setItems([
-        { name: recipeIngredients[0].recipe_id, total_quantity: 0, unit: "", checked: false }
-      ])
 
   const aggregated: Record<string, ShoppingItem> = {}
 
@@ -70,6 +67,11 @@ setItems([
     const ingredientsForRecipe = recipeIngredients.filter(
       ri => ri.recipe_id === meal.recipe_id
     )
+
+setItems([
+        { name: ingredientsForRecipe[0].recipe_id, total_quantity: 0, unit: "", checked: false }
+      ])
+
 
     for (const ri of ingredientsForRecipe) {
 
