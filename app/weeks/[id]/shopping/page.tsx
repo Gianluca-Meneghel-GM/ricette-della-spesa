@@ -79,7 +79,7 @@ async function generateShoppingList() {
 setItems([{
           name: JSON.stringify(ingredientMap),
           total_quantity: 0,
-          unit: ri.unit,
+          unit: 2,
           checked: false
         }])
 
