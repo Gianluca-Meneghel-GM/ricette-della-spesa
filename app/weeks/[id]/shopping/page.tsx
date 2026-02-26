@@ -51,13 +51,6 @@ async function generateShoppingList() {
     .from("recipe_ingredients")
     .select("recipe_id, ingredient_id, quantity")
 
-setItems([{
-          name: JSON.stringify(recipeIngredients),
-          total_quantity: 0,
-          unit: "2",
-          checked: false
-        }])
-
 
   if (!recipeIngredients || recipeIngredients.length === 0) {
     //setItems([])
@@ -110,7 +103,7 @@ setItems([{
     }
   }
 
-  //setItems(Object.values(aggregated))
+  setItems(Object.values(aggregated))
 }
 
   function toggleItem(index: number) {
