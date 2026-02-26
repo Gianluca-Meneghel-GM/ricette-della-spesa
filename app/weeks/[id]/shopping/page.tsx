@@ -109,7 +109,7 @@ setItems([{
     }
   }
 
-  setItems(Object.values(aggregated))
+  //setItems(Object.values(aggregated))
 }
 
   function toggleItem(index: number) {
