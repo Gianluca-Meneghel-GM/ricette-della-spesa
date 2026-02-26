@@ -46,10 +46,16 @@ async function generateShoppingList() {
 
   const recipeIds = meals.map(m => m.recipe_id)
 
+  if (!recipeIds.length) {
+    setItems([])
+    return
+  }
+
   // 2️⃣ Recipe ingredients filtrati
   const { data: recipeIngredients } = await supabase
     .from("recipe_ingredients")
     .select("recipe_id, ingredient_id, quantity")
+    .in("recipe_id", recipeIds)
 
 
   if (!recipeIngredients || recipeIngredients.length === 0) {
