@@ -49,8 +49,7 @@ async function generateShoppingList() {
   // 2️⃣ Recipe ingredients filtrati
   const { data: recipeIngredients } = await supabase
     .from("recipe_ingredients")
-    .select("recipe_id, ingredient_id, quantity, unit")
-    .in("recipe_id", recipeIds)
+    .select("recipe_id, ingredient_id, quantity")
 
 setItems([{
           name: JSON.stringify(recipeIngredients),
@@ -68,7 +67,7 @@ setItems([{
   // 3️⃣ Prendiamo tutti gli ingredienti
   const { data: ingredients } = await supabase
     .from("ingredients")
-    .select("id, name")
+    .select("id, name, unit")
 
   if (!ingredients) {
     //setItems([])
@@ -102,7 +101,7 @@ setItems([{
         aggregated[ingredientName] = {
           name: ingredientName,
           total_quantity: 0,
-          unit: ri.unit,
+          unit: "g",
           checked: false
         }
       }
