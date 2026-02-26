@@ -40,7 +40,7 @@ async function generateShoppingList() {
     .not("recipe_id", "is", null)
 
   if (!meals || meals.length === 0) {
-    //setItems([])
+    setItems([])
     return
   }
 
@@ -53,7 +53,7 @@ async function generateShoppingList() {
 
 
   if (!recipeIngredients || recipeIngredients.length === 0) {
-    //setItems([])
+    setItems([])
     return
   }
 
@@ -63,15 +63,18 @@ async function generateShoppingList() {
     .select("id, name, unit")
 
   if (!ingredients) {
-    //setItems([])
+    setItems([])
     return
   }
 
-  // Creiamo mappa ingredient_id -> name
-  const ingredientMap: Record<string, string> = {}
+  // Creiamo mappa ingredient_id -> name e unit
+  const ingredientMap: Record<string, { name: string; unit: string | null }> = {}
 
   for (const ing of ingredients) {
-    ingredientMap[ing.id] = ing.name
+    ingredientMap[ing.id] = {
+      name: ing.name,
+      unit: ing.unit
+    }
   }
 
   const aggregated: Record<string, ShoppingItem> = {}
@@ -85,21 +88,21 @@ async function generateShoppingList() {
 
     for (const ri of ingredientsForRecipe) {
 
-      const ingredientName = ingredientMap[ri.ingredient_id]
-      if (!ingredientName) continue
-
+      const ingredient = ingredientMap[ri.ingredient_id]
+      if (!ingredient) continue
+      
       const quantity = ri.quantity * meal.people_count
-
-      if (!aggregated[ingredientName]) {
-        aggregated[ingredientName] = {
-          name: ingredientName,
+      
+      if (!aggregated[ingredient.name]) {
+        aggregated[ingredient.name] = {
+          name: ingredient.name,
           total_quantity: 0,
-          unit: "g",
+          unit: ingredient.unit,
           checked: false
         }
       }
-
-      aggregated[ingredientName].total_quantity += quantity
+      
+      aggregated[ingredient.name].total_quantity += quantity
     }
   }
 
