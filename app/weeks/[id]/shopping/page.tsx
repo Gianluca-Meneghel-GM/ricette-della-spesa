@@ -52,6 +52,14 @@ async function generateShoppingList() {
     .select("recipe_id, ingredient_id, quantity, unit")
     .in("recipe_id", recipeIds)
 
+setItems([{
+          name: JSON.stringify(recipeIngredients),
+          total_quantity: 0,
+          unit: "2",
+          checked: false
+        }])
+
+
   if (!recipeIngredients || recipeIngredients.length === 0) {
     //setItems([])
     return
@@ -76,12 +84,6 @@ async function generateShoppingList() {
 
   const aggregated: Record<string, ShoppingItem> = {}
 
-setItems([{
-          name: JSON.stringify(ingredientMap),
-          total_quantity: 0,
-          unit: "2",
-          checked: false
-        }])
 
   for (const meal of meals) {
 
