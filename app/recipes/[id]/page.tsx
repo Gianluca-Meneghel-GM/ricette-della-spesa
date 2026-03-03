@@ -12,6 +12,12 @@ export default function RecipePage() {
   const [baseServings, setBaseServings] = useState(1)
   const [loading, setLoading] = useState(true)
   const [recipeIngredients, setRecipeIngredients] = useState<any[]>([])
+  const [allIngredients, setAllIngredients] = useState<any[]>([])
+  
+  const [selectedIngredientId, setSelectedIngredientId] = useState("")
+  const [newIngredientName, setNewIngredientName] = useState("")
+  const [newIngredientUnit, setNewIngredientUnit] = useState("")
+  const [quantity, setQuantity] = useState(0)
 
   useEffect(() => {
     fetchRecipe()
@@ -38,6 +44,15 @@ export default function RecipePage() {
       .eq("id", id)
       .single()
   
+    const { data: ingredientsData } = await supabase
+      .from("ingredients")
+      .select("id, name, unit")
+      .order("name")
+    
+    if (ingredientsData) {
+      setAllIngredients(ingredientsData)
+    }
+
     if (data) {
       setName(data.name)
       setBaseServings(data.base_servings)
@@ -46,6 +61,71 @@ export default function RecipePage() {
     }
   
     setLoading(false)
+  }
+
+  async function addIngredientToRecipe() {
+    let ingredientId = selectedIngredientId
+  
+    // 1️⃣ Se l'utente ha scritto un nuovo ingrediente → creiamolo
+    if (!ingredientId && newIngredientName) {
+      const { data: newIngredient, error } = await supabase
+        .from("ingredients")
+        .insert({
+          name: newIngredientName,
+          unit: newIngredientUnit || null
+        })
+        .select()
+        .single()
+  
+      if (error || !newIngredient) {
+        alert("Errore creazione ingrediente")
+        return
+      }
+  
+      ingredientId = newIngredient.id
+  
+      // aggiorniamo lista ingredienti disponibili
+      setAllIngredients(prev => [...prev, newIngredient])
+    }
+  
+    if (!ingredientId || !quantity) {
+      alert("Seleziona ingrediente e quantità")
+      return
+    }
+  
+    // 2️⃣ Inseriamo collegamento nella recipe
+    const { data, error } = await supabase
+      .from("recipe_ingredients")
+      .insert({
+        recipe_id: id,
+        ingredient_id: ingredientId,
+        quantity
+      })
+      .select(`
+        id,
+        quantity,
+        ingredient_id,
+        ingredients (
+          id,
+          name,
+          unit
+        )
+      `)
+      .single()
+  
+    if (error || !data) {
+      alert("Errore inserimento ingrediente")
+      return
+    }
+  
+    // 3️⃣ Aggiorniamo UI
+    setRecipeIngredients(prev => [...prev, data])
+  
+    // reset campi
+    setSelectedIngredientId("")
+    setNewIngredientName("")
+    setNewIngredientUnit("")
+    setQuantity(0)
   }
 
   async function updateRecipe() {
@@ -150,6 +230,51 @@ export default function RecipePage() {
             </button>
           </div>
         ))}
+      </div>
+
+      <h3>Aggiungi ingrediente</h3>
+
+      <div style={{ display: "grid", gap: 8, maxWidth: 400 }}>
+      
+        {/* Select ingredienti esistenti */}
+        <select
+          value={selectedIngredientId}
+          onChange={(e) => setSelectedIngredientId(e.target.value)}
+        >
+          <option value="">-- Seleziona ingrediente --</option>
+          {allIngredients.map(ing => (
+            <option key={ing.id} value={ing.id}>
+              {ing.name} ({ing.unit || "-"})
+            </option>
+          ))}
+        </select>
+      
+        <div style={{ textAlign: "center" }}>oppure crea nuovo</div>
+      
+        {/* Nuovo ingrediente */}
+        <input
+          placeholder="Nuovo ingrediente"
+          value={newIngredientName}
+          onChange={(e) => setNewIngredientName(e.target.value)}
+        />
+      
+        <input
+          placeholder="Unità (g, ml, pcs...)"
+          value={newIngredientUnit}
+          onChange={(e) => setNewIngredientUnit(e.target.value)}
+        />
+      
+        <input
+          type="number"
+          placeholder="Quantità"
+          value={quantity}
+          onChange={(e) => setQuantity(Number(e.target.value))}
+        />
+      
+        <button onClick={addIngredientToRecipe}>
+          Aggiungi
+        </button>
+      
       </div>
 
       <button onClick={updateRecipe}>
