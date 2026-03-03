@@ -144,7 +144,12 @@ async function generateShoppingList() {
     aggregated[ingredient.name].total_quantity += scaledQuantity
   }
 
-  setItems(Object.values(aggregated))
+  const finalItems = Object.values(aggregated).map(item => ({
+    ...item,
+    total_quantity: Number(item.total_quantity.toFixed(2))
+  }))
+  
+  setItems(finalItems)
 }
   function toggleItem(index: number) {
     const updated = [...items]
