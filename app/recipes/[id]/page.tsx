@@ -11,6 +11,7 @@ export default function RecipePage() {
   const [name, setName] = useState("")
   const [baseServings, setBaseServings] = useState(1)
   const [loading, setLoading] = useState(true)
+  const [recipeIngredients, setRecipeIngredients] = useState<any[]>([])
 
   useEffect(() => {
     fetchRecipe()
@@ -19,15 +20,31 @@ export default function RecipePage() {
   async function fetchRecipe() {
     const { data } = await supabase
       .from("recipes")
-      .select("*")
+      .select(`
+        id,
+        name,
+        base_servings,
+        recipe_ingredients (
+          id,
+          quantity,
+          ingredient_id,
+          ingredients (
+            id,
+            name,
+            unit
+          )
+        )
+      `)
       .eq("id", id)
       .single()
-
+  
     if (data) {
       setName(data.name)
       setBaseServings(data.base_servings)
+  
+      setRecipeIngredients(data.recipe_ingredients || [])
     }
-
+  
     setLoading(false)
   }
 
@@ -80,6 +97,30 @@ export default function RecipePage() {
         onChange={(e) => setBaseServings(Number(e.target.value))}
         placeholder="Base servings"
       />
+
+      <h2>Ingredienti</h2>
+
+      <div style={{ display: "grid", gap: 8 }}>
+        {recipeIngredients.map((ri) => (
+          <div
+            key={ri.id}
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              border: "1px solid #ddd",
+              padding: 8,
+              borderRadius: 8
+            }}
+          >
+            <div>
+              <strong>{ri.ingredients?.name}</strong>
+              <div>
+                {ri.quantity} {ri.ingredients?.unit}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
 
       <button onClick={updateRecipe}>
         Salva modifiche
