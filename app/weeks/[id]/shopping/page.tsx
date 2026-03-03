@@ -32,10 +32,10 @@ export default function ShoppingPage() {
 
 async function generateShoppingList() {
 
-  // 1️⃣ Meals della week
+  // 1️⃣ Prendiamo tutti i meals della week
   const { data: meals } = await supabase
     .from("meals")
-    .select("people_count, recipe_id")
+    .select("recipe_id, people_count")
     .eq("weekly_menu_id", weekId)
     .not("recipe_id", "is", null)
 
@@ -44,26 +44,55 @@ async function generateShoppingList() {
     return
   }
 
-  const recipeIds = meals.map(m => m.recipe_id)
+  // 2️⃣ Aggrego persone totali per ricetta
+  const recipePeopleMap: Record<string, number> = {}
 
-  if (!recipeIds.length) {
+  for (const meal of meals) {
+    if (!recipePeopleMap[meal.recipe_id]) {
+      recipePeopleMap[meal.recipe_id] = 0
+    }
+
+    recipePeopleMap[meal.recipe_id] += meal.people_count
+  }
+
+  const recipeIds = Object.keys(recipePeopleMap)
+
+  if (recipeIds.length === 0) {
     setItems([])
     return
   }
 
-  // 2️⃣ Recipe ingredients filtrati
+  // 3️⃣ Prendiamo base_servings delle ricette coinvolte
+  const { data: recipes } = await supabase
+    .from("recipes")
+    .select("id, base_servings")
+    .in("id", recipeIds)
+
+  if (!recipes || recipes.length === 0) {
+    setItems([])
+    return
+  }
+
+  const recipeMap: Record<string, { base_servings: number }> = {}
+
+  for (const r of recipes) {
+    recipeMap[r.id] = {
+      base_servings: r.base_servings
+    }
+  }
+
+  // 4️⃣ Prendiamo recipe ingredients SOLO delle ricette coinvolte
   const { data: recipeIngredients } = await supabase
     .from("recipe_ingredients")
     .select("recipe_id, ingredient_id, quantity")
     .in("recipe_id", recipeIds)
-
 
   if (!recipeIngredients || recipeIngredients.length === 0) {
     setItems([])
     return
   }
 
-  // 3️⃣ Prendiamo tutti gli ingredienti
+  // 5️⃣ Prendiamo ingredienti (nome + unit)
   const { data: ingredients } = await supabase
     .from("ingredients")
     .select("id, name, unit")
@@ -73,8 +102,10 @@ async function generateShoppingList() {
     return
   }
 
-  // Creiamo mappa ingredient_id -> name e unit
-  const ingredientMap: Record<string, { name: string; unit: string | null }> = {}
+  const ingredientMap: Record<
+    string,
+    { name: string; unit: string | null }
+  > = {}
 
   for (const ing of ingredients) {
     ingredientMap[ing.id] = {
@@ -83,38 +114,38 @@ async function generateShoppingList() {
     }
   }
 
+  // 6️⃣ Aggregazione finale
   const aggregated: Record<string, ShoppingItem> = {}
 
+  for (const ri of recipeIngredients) {
 
-  for (const meal of meals) {
+    const totalPeople = recipePeopleMap[ri.recipe_id]
+    if (!totalPeople) continue
 
-    const ingredientsForRecipe = recipeIngredients.filter(
-      ri => ri.recipe_id === meal.recipe_id
-    )
+    const recipe = recipeMap[ri.recipe_id]
+    if (!recipe || !recipe.base_servings) continue
 
-    for (const ri of ingredientsForRecipe) {
+    const ingredient = ingredientMap[ri.ingredient_id]
+    if (!ingredient) continue
 
-      const ingredient = ingredientMap[ri.ingredient_id]
-      if (!ingredient) continue
-      
-      const quantity = ri.quantity * meal.people_count
-      
-      if (!aggregated[ingredient.name]) {
-        aggregated[ingredient.name] = {
-          name: ingredient.name,
-          total_quantity: 0,
-          unit: ingredient.unit,
-          checked: false
-        }
+    // 🔥 Formula corretta
+    const scaledQuantity =
+      (ri.quantity / recipe.base_servings) * totalPeople
+
+    if (!aggregated[ingredient.name]) {
+      aggregated[ingredient.name] = {
+        name: ingredient.name,
+        total_quantity: 0,
+        unit: ingredient.unit,
+        checked: false
       }
-      
-      aggregated[ingredient.name].total_quantity += quantity
     }
+
+    aggregated[ingredient.name].total_quantity += scaledQuantity
   }
 
   setItems(Object.values(aggregated))
 }
-
   function toggleItem(index: number) {
     const updated = [...items]
     updated[index].checked = !updated[index].checked
