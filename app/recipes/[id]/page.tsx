@@ -79,6 +79,21 @@ export default function RecipePage() {
     router.push("/recipes")
   }
 
+  async function removeIngredient(recipeIngredientId: string) {
+    const confirmed = confirm("Rimuovere questo ingrediente dalla ricetta?")
+    if (!confirmed) return
+  
+    await supabase
+      .from("recipe_ingredients")
+      .delete()
+      .eq("id", recipeIngredientId)
+  
+    // aggiorniamo stato locale senza refetch
+    setRecipeIngredients(prev =>
+      prev.filter(ri => ri.id !== recipeIngredientId)
+    )
+  }
+
   if (loading) return <p>Loading...</p>
 
   return (
@@ -107,6 +122,7 @@ export default function RecipePage() {
             style={{
               display: "flex",
               justifyContent: "space-between",
+              alignItems: "center",
               border: "1px solid #ddd",
               padding: 8,
               borderRadius: 8
@@ -118,6 +134,20 @@ export default function RecipePage() {
                 {ri.quantity} {ri.ingredients?.unit}
               </div>
             </div>
+      
+            <button
+              onClick={() => removeIngredient(ri.id)}
+              style={{
+                background: "red",
+                color: "white",
+                border: "none",
+                padding: "6px 10px",
+                borderRadius: 6,
+                cursor: "pointer"
+              }}
+            >
+              🗑
+            </button>
           </div>
         ))}
       </div>
